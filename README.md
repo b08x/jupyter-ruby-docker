@@ -1,5 +1,7 @@
 # Jupyter Notebook with Ruby Kernel & NLP Gems
 
+[![CI](https://github.com/b08x/jupyter-ruby-docker/actions/workflows/ci.yml/badge.svg)](https://github.com/b08x/jupyter-ruby-docker/actions/workflows/ci.yml)
+
 Based on RubyData's [docker-stacks](https://github.com/RubyData/docker-stacks)
 
 This project provides a Docker image that bundles a Jupyter Notebook server preconfigured with a Ruby kernel (IRuby) and a comprehensive suite of RubyGems focused on Natural Language Processing (NLP) and language model utilities.
