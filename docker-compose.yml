@@ -1,0 +1,17 @@
+services:
+  nlp-notebook:
+    image: b08x/notebook-nlp:latest
+    build:
+      context: .
+      dockerfile: nlp/Dockerfile
+    volumes:
+      - $HOME/Documents:/home/jovyan/Library:ro
+      - $HOME/Workspace:/home/jovyan/Workspace
+    user: 1000:1000
+    env_file:
+      - .env
+    environment:
+      PUID: 1000
+      PGID: 1000
+    ports:
+      - 8888:8888
