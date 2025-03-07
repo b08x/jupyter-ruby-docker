@@ -5,3 +5,4 @@ Gemfile.lock
 nlp/language_models/
 /**/*/.ipynb_checkpoints
 .rake_tasks~
+jupyter-ruby-docker.code-workspace
