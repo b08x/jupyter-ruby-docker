@@ -1,7 +1,10 @@
 # Base Jupyter Notebook Stack
 
+Adapted from the base Jupyter Notebook Stack to include:
 
-Adapted to include Spacy and Gemini Agent Toolkit
+- **Spacy:** For advanced Natural Language Processing capabilities.
+- **Google Agent Development Kit (ADK):** For building AI agents.
+- **Other AI/ML Libraries:** Including `google-generativeai`, `openai`, `chromadb`, `nltk`, and `pytorch`.
 
 GitHub Actions in the <https://github.com/jupyter/docker-stacks> project builds and pushes this image to the Registry.
 
