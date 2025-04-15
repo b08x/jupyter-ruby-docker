@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         image_base_name:
-          - base
+          # - base
           - nlp
 
     name: notebook-${{ matrix.image_base_name }}
@@ -28,7 +28,7 @@ jobs:
 
       - uses: ruby/setup-ruby@master
         with:
-          ruby-version: "3.1"
+          ruby-version: "3.2"
 
       - name: Build images
         run: rake build/${{ matrix.image_base_name }}
