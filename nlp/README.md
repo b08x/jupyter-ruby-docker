@@ -98,7 +98,7 @@ This image comes pre-installed with the following Ruby gems (specified in `Gemfi
 * **[pry-doc](https://github.com/pry/pry-doc)**: Provides documentation browsing capabilities within Pry.
 * **[rake](https://github.com/ruby/rake)**: Ruby build program with capabilities similar to Make.
 * **[ratelimit](https://github.com/ejfinneran/ratelimit)**: Generic rate limiter implementation.
-* **[sad_panda](https://github.com/mattThousand/sad_panda)**: Sentiment analysis library.
+~~**[sad_panda](https://github.com/mattThousand/sad_panda)**: Sentiment analysis library.~~
 * **[sinatra](https://github.com/sinatra/sinatra)**: DSL for quickly creating web applications in Ruby.
 * **timeout**: Auto-terminate potentially long-running operations. (Built-in)
 * **[tool_tailor](https://github.com/kieranklaassen/tool_tailor)**: A Gem to convert methods to openai JSON schemas for use with tools.
