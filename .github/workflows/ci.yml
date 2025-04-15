@@ -18,6 +18,7 @@ jobs:
     strategy:
       matrix:
         image_base_name:
+          - base
           - nlp
 
     name: notebook-${{ matrix.image_base_name }}

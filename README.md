@@ -5,7 +5,7 @@
 Based on RubyData's [docker-stacks](https://github.com/RubyData/docker-stacks)
 
 <div style="float: left; margin-right: 20px;">
-  <img src="DALL·E 2025-03-07 06.30.42 - A simple process diagram illustrating the workflow for running Jupyter Notebook with a Ruby Kernel and NLP tools using Docker___1. _User clones the re.webp" alt="Process Diagram" width="500" height="500">
+  <img src="docs/assets/img/info_graphic.webp" alt="Process Diagram" width="500" height="500">
 </div>
 This project provides a Docker image that bundles a Jupyter Notebook server preconfigured with a Ruby kernel (IRuby) and a comprehensive suite of RubyGems focused on Natural Language Processing (NLP) and language model utilities.
 

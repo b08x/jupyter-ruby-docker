@@ -1,6 +1,7 @@
 OWNER = 'b08x'.freeze
 ALL_IMAGES = %w[
   nlp
+  base
 ].each(&:freeze).freeze
 
 BASE_IMAGES = ALL_IMAGES.map do |name|
