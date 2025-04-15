@@ -72,6 +72,7 @@ USER root
 RUN apt-get update && apt-get install -y -V --no-install-recommends \
     curl \
     exiftool \
+    fzf \
     ghostscript \
     git \
     git-lfs \
@@ -92,6 +93,7 @@ RUN apt-get update && apt-get install -y -V --no-install-recommends \
     poppler-utils \
     postgresql-client \
     python3-link-grammar \
+    ripgrep \
     rsync \
     sqlite3 \
     tesseract-ocr \
