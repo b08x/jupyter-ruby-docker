@@ -2,109 +2,175 @@
 
 [![CI](https://github.com/b08x/jupyter-ruby-docker/actions/workflows/ci.yml/badge.svg)](https://github.com/b08x/jupyter-ruby-docker/actions/workflows/ci.yml)
 
-Based on RubyData's [docker-stacks](https://github.com/RubyData/docker-stacks)
+Based on RubyData's [docker-stacks](https://github.com/RubyData/docker-stacks) and the official [Jupyter Docker Stacks](https://github.com/jupyter/docker-stacks).
 
 <div style="float: left; margin-right: 20px;">
   <img src="docs/assets/img/info_graphic.webp" alt="Process Diagram" width="500" height="500">
 </div>
-This project provides a Docker image that bundles a Jupyter Notebook server preconfigured with a Ruby kernel (IRuby) and a comprehensive suite of RubyGems focused on Natural Language Processing (NLP) and language model utilities.
+This project provides Docker images that bundle a Jupyter Notebook server preconfigured with a Ruby kernel (IRuby) and a comprehensive suite of RubyGems focused on Natural Language Processing (NLP) and language model utilities.
 
 ## Features
 
 - **Ruby Kernel for Jupyter**: Use IRuby to run Ruby code interactively within Jupyter notebooks.
 - **NLP Libraries**: Includes gems for text tokenization, sentiment analysis, entity extraction, and various language utilities.
-- **Cross-Language Integration**: Leverage Python libraries from Ruby via [pycall](https://rubygems.org/gems/pycall) for mixed-language workflows.
+- **Cross-Language Integration**: Leverage Python libraries (like spaCy, NLTK, Transformers) from Ruby via [pycall](https://rubygems.org/gems/pycall) for mixed-language workflows.
 - **Data Analysis**: Utilize gems like [daru](https://rubygems.org/gems/daru) and [daru-view](https://rubygems.org/gems/daru-view) for data manipulation and visualization.
+- **Vector Database Integration**: Includes `pgvector` and `redis` services via Docker Compose for vector similarity searches.
 
 ## Prerequisites
 
 - [Docker](https://www.docker.com/get-started) installed on your machine.
+- [Docker Compose](https://docs.docker.com/compose/install/) (Recommended for full functionality).
 - Basic familiarity with Jupyter Notebooks and Docker commands.
 
-## Installation
+## Building the Images
+
+The project contains two primary Docker images: `base` and `nlp`.
+
+- **`base`**: A foundational image built upon `jupyter/docker-stacks-foundation`, including JupyterLab, common Python data science libraries, and essential NLP tools like spaCy and Google Generative AI SDK.
+- **`nlp`**: Built upon the `base` image, this adds Ruby, IRuby kernel, and a wide range of Ruby NLP gems (see `nlp/Gemfile`).
 
 1. **Clone the Repository**
 
-   ```bash
-   git clone https://github.com/yourusername/your-repo.git
-   cd your-repo
-   ```
+    ```bash
+    git clone https://github.com/b08x/jupyter-ruby-docker.git
+    cd jupyter-ruby-docker
+    ```
 
-2. **Build the Docker Image**
+2. **Build the Images**
 
-   The provided `Dockerfile` uses a multi-stage build:
-   
-   - **Stage 1 (Builder):** Installs Ruby, build dependencies, and RubyGems listed in the `Gemfile`.  
-   - **Stage 2 (Final Image):** Uses the [Jupyter minimal-notebook](https://quay.io/repository/jupyter/minimal-notebook) as the base, copies Ruby binaries and installed gems from the builder stage, and sets up runtime dependencies.
+    You can build the images individually using `docker build` or use the provided `Rakefile`:
 
-   To build the image, run:
+    - **Using Docker Build (NLP image, depends on base):**
 
-   ```bash
-   docker build -t jupyter-ruby-nlp .
-   ```
+        ```bash
+        # Build the base image first (if not pulled from a registry)
+        docker build -t b08x/notebook-base:latest -f base/Dockerfile .
 
-3. **Verify Build**
+        # Build the NLP image
+        docker build -t b08x/notebook-nlp:latest -f nlp/Dockerfile .
+        ```
 
-   Once built, list your Docker images:
+    - **Using Rake (Recommended):**
 
-   ```bash
-   docker images
-   ```
+        ```bash
+        # Build the nlp image (will build base automatically if needed)
+        rake build/nlp
+
+        # Or build all defined images
+        rake build-all
+        ```
 
 ## Running the Container
 
-1. **Launch the Notebook Server**
+You can run the `nlp` image using either `docker run` or `docker-compose`. Using `docker-compose` is recommended as it also sets up the `redis` and `pgvector` services defined in `docker-compose.yml`.
 
-   Run the container, mapping port 8888 to your host:
+### Using `docker run` (Notebook only)
 
-   ```bash
-   docker run --rm -p 8888:8888 jupyter-ruby-nlp
-   ```
+This method starts only the Jupyter notebook container.
 
-2. **Access Jupyter**
+```bash
+docker run --rm -p 8888:8888 \
+  -v "${PWD}/work":/home/jovyan/work \
+  --user $(id -u):$(id -g) \
+  b08x/notebook-nlp:latest
+```
 
-   Open your browser and go to `http://localhost:8888`. The startup logs will display an authentication token—use it to log in.
+**Explanation:**
 
-3. **Using the Ruby Kernel**
+- `--rm`: Automatically remove the container when it exits.
+- `-p 8888:8888`: Map port 8888 on your host to port 8888 in the container.
+- `-v "${PWD}/work":/home/jovyan/work`: Mount a local directory named `work` into the container's home directory. **Create this directory (`mkdir work`) in your project folder first.** This allows you to persist your notebooks and data.
+- `--user $(id -u):$(id -g)`: Run the container using your current user and group ID to avoid permission issues with mounted volumes.
+- `b08x/notebook-nlp:latest`: The image to run.
 
-   Within Jupyter, create a new notebook and select the Ruby kernel (IRuby). You can then run Ruby code and take advantage of the installed NLP gems.
+**Access Jupyter:** Open your browser and go to `http://localhost:8888` (or `http://<your-docker-ip>:8888`). The startup logs in your terminal will display an authentication token—use it to log in.
+
+### Using `docker-compose` (Recommended: Notebook + Redis + Pgvector)
+
+This method uses the `docker-compose.yml` file to start the `nlp-notebook`, `redis`, and `pgvector` services together.
+
+1. **Environment Setup:**
+    Copy the example environment file and adjust if necessary (especially if your user/group ID is not 1000):
+
+    ```bash
+    cp .env.example .env
+    # Optional: Edit .env if your UID/GID is not 1000
+    # You can find your UID/GID with: id -u and id -g
+    ```
+
+2. **Create Work Directory:**
+    Ensure the directory you plan to mount exists:
+
+    ```bash
+    mkdir -p ~/Workspace # Or the path specified in docker-compose.yml volumes
+    mkdir -p ~/Documents # Or the path specified in docker-compose.yml volumes
+    ```
+
+    *Note: The default `docker-compose.yml` mounts `~/Workspace` to `/home/jovyan/work` and `~/Documents` to `/home/jovyan/Library` (read-only).*
+
+3. **Start Services:**
+
+    ```bash
+    docker-compose up -d
+    ```
+
+    - `-d`: Run containers in detached mode (in the background).
+
+4. **Access Jupyter:**
+    Open your browser to `http://localhost:8888`. Use the token from the logs (`docker-compose logs nlp-notebook`).
+
+5. **Access RedisInsight:**
+    Open your browser to `http://localhost:8001`.
+
+6. **Stopping Services:**
+
+    ```bash
+    docker-compose down
+    ```
 
 ## Usage Examples
 
-- **IRuby Notebooks:** Start exploring Ruby-based data analysis and NLP tasks directly in your notebook.
-- **Integrate Python:** With [pycall](https://rubygems.org/gems/pycall) installed, you can call Python libraries (e.g., spaCy for NLP) from your Ruby code.
+- **IRuby Notebooks:** Within Jupyter, create a new notebook and select the Ruby 3.2 kernel (IRuby). You can then run Ruby code and take advantage of the installed NLP gems.
+- **Integrate Python:** With [pycall](https://rubygems.org/gems/pycall) installed, you can call Python libraries (e.g., spaCy, NLTK) from your Ruby code.
 - **NLP Pipelines:** Use gems such as [ruby-spacy](https://rubygems.org/gems/ruby-spacy) and [langchainrb](https://rubygems.org/gems/langchainrb) to build language processing pipelines and experiment with language models.
+- **Vector Search:** Utilize the `pgvector` or `redis` services (when using `docker-compose`) for storing and querying vector embeddings.
 
 ## Overview of Included RubyGems
 
-Below is a brief description of some of the key RubyGems included in the Gemfile:
+Key RubyGems included in the `nlp/Gemfile`:
 
-- **iruby**: Provides the Ruby kernel for Jupyter, enabling interactive Ruby sessions.
-- **pycall**: Allows Ruby code to call Python functions and libraries, bridging the gap between Ruby and Python ecosystems.
-- **ruby-spacy**: A Ruby wrapper for spaCy, offering NLP functionalities like tokenization, part-of-speech tagging, and dependency parsing.
-- **langchainrb**: Offers utilities for building language model workflows, useful for tasks like chaining prompts and responses.
-- **daru & daru-view**: Libraries for data analysis and visualization in Ruby.
-- **fuzzy_tools & pragmatic_tokenizer**: Gems that facilitate text processing tasks such as fuzzy matching and tokenization.
-- **Other Utilities**: Gems such as `open3`, `redis`, `jsonl`, and various `tty-*` packages support logging, concurrency, and terminal UI improvements.
+- **iruby**: Provides the Ruby kernel for Jupyter.
+- **pycall**: Allows Ruby code to call Python functions and libraries.
+- **ruby-spacy**: Ruby wrapper for spaCy NLP library.
+- **langchainrb**: Utilities for building language model workflows.
+- **daru & daru-view**: Data analysis and visualization.
+- **pgvector**: Ruby client for the Pgvector PostgreSQL extension.
+- **redis**: Ruby client for Redis.
+- **chroma-db**: Ruby client for ChromaDB vector store.
+- **fuzzy_tools & pragmatic_tokenizer**: Text processing utilities.
 
-For a complete list of the gems and their respective versions, please review the [Gemfile](./Gemfile).
+For a complete list, review the [nlp/Gemfile](./nlp/Gemfile).
 
 ## Customization & Development
 
-- **Gemfile Updates**: To add or update RubyGems, modify the Gemfile and rebuild the image.
-- **Kernel Patching**: The Dockerfile applies a patch to `ruby-spacy` (via `respond_to_missing.patch`)—customize this patch if needed for your setup.
-- **Dockerfile Tweaks**: Adjust the Dockerfile as necessary (e.g., to add extra system packages or change configurations).
+- **Add/Update RubyGems**: Modify `nlp/Gemfile` and rebuild the `nlp` image (`rake build/nlp` or `docker build -f nlp/Dockerfile ...`).
+- **Add/Update Python Packages**: Modify `base/Dockerfile` (specifically the `pip install` or `mamba install` commands) and rebuild both `base` and `nlp` images.
+- **System Packages**: Add `apt-get install` commands to the relevant `Dockerfile` (`base/Dockerfile` for Python/base dependencies, `nlp/Dockerfile` for Ruby/runtime dependencies) and rebuild.
+- **Configuration**: Modify Jupyter configurations in `base/jupyter_server_config.py` or startup scripts (`base/start-notebook.py`, etc.) and rebuild.
+- **Kernel Patching**: The `nlp/Dockerfile` applies a patch to `ruby-spacy` (via `respond_to_missing.patch`)—customize this patch if needed.
 
 ## Troubleshooting
 
-- **Build Issues**: Verify that all build dependencies are available and that your Docker daemon has enough resources.
-- **Kernel Registration**: If the Ruby kernel does not appear in Jupyter, ensure that `iruby register --force` ran successfully during the build.
-- **Port Conflicts**: If port 8888 is already in use, modify the `docker run` command to map to a different host port.
+- **Build Issues**: Verify build dependencies and Docker daemon resources. Check build logs for errors.
+- **Kernel Registration**: If the Ruby kernel doesn't appear, ensure `iruby register --force` ran successfully during the `nlp` image build (`docker logs <container_id>` or check build output).
+- **Port Conflicts**: If port 8888 (or others like 6379, 5432) is in use, modify the `docker run -p` mapping or the `ports` section in `docker-compose.yml`.
+- **Volume Permissions**: If you encounter permission errors with mounted volumes, ensure the `--user $(id -u):$(id -g)` flag is used with `docker run` or that the `UID`/`GID` in your `.env` file matches your host user when using `docker-compose`.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License. See the LICENSE file (if available) or assume MIT if missing. Base images used may have their own licenses (e.g., BSD for Jupyter Docker Stacks).
 
 ## Contributing
 
-Contributions are welcome! Please fork the repository and submit pull requests for any improvements or bug fixes.
+Contributions are welcome! Please fork the repository and submit pull requests.
