@@ -19,7 +19,7 @@ This image comes pre-installed with the following Ruby gems (specified in `Gemfi
 
 ### NLP & Text Processing
 
-* **[bm25](https://rubygems.org/gems/bm25)**: Implements the Okapi BM25 ranking function for information retrieval.
+* **[bm25f](https://github.com/catflip/bm25f-ruby)**: A fast implementation of the BM25F ranking algorithm for information retrieval systems.
 * **[commonmarker](https://github.com/gjtorikian/commonmarker)**: A fast, safe CommonMark parser and renderer.
 * **[fuzzy_tools](https://rubygems.org/gems/fuzzy_tools)**: Tools for fuzzy string matching and searching.
 * **[kramdown](https://github.com/gettalong/kramdown)**: A fast, pure Ruby Markdown superset converter.
